@@ -1,0 +1,9 @@
+Flask
+gunicorn
+numpy
+scikit-learn
+pandas
+google-generativeai
+python-dotenv
+pytest>=7.0.0
+Flask-Cors 

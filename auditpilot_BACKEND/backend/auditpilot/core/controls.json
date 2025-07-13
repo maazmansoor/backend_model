@@ -1,0 +1,182 @@
+{
+  "AC-1": {
+    "question": "Are comprehensive access control policies established that address AI agent authentication, authorization, and accountability requirements?",
+    "examples": [
+      {
+        "evidence": "The company's 'AI Systems Access Control Policy v3.1' document, last updated 2024-05-20, is attached. Section 2 outlines agent authentication using mTLS with short-lived certificates. Section 3 details a role-based access control (RBAC) model for authorization, mapping agent roles to specific data resources. Section 5 describes the logging requirements for all agent actions, which are fed into our SIEM for accountability.",
+        "base_score": 95,
+        "justification": "The evidence provided is a detailed, version-controlled policy document that explicitly covers all three required areas: authentication, authorization, and accountability for AI agents."
+      },
+      {
+        "evidence": "We have a general access control policy for employees, but we haven't created a specific one for the new AI agents yet. We're planning to address it in the next quarter.",
+        "base_score": 15,
+        "justification": "The existing policy does not cover AI agents, and there is no current, established policy for them, representing a significant gap."
+      }
+    ]
+  },
+  "AC-2": {
+    "question": "Do all user accounts and AI agent identities have lifecycle management policies enforced with automated provisioning and deprovisioning?",
+    "examples": [
+      {
+        "evidence": "Our system integrates with the corporate Identity Provider (IdP). When a new developer is added to the 'AI-Developers' group in the IdP, a webhook automatically provisions their account and AI agent identities via a Terraform script. When they are removed from the group, another webhook triggers a script that deactivates all associated credentials and archives their agent data within 2 hours.",
+        "base_score": 100,
+        "justification": "The process is fully automated for both provisioning and deprovisioning, triggered by the central IdP, ensuring timely and consistent lifecycle management."
+      },
+      {
+        "evidence": "When a new user needs access, they email the IT help desk. An admin manually creates their account and agent credentials. For deprovisioning, their manager is supposed to notify IT, but sometimes there's a delay.",
+        "base_score": 25,
+        "justification": "The process is manual, inconsistent, and lacks automated enforcement, especially for deprovisioning, which presents a significant security risk."
+      }
+    ]
+  },
+  "AC-3": {
+    "question": "Are access decisions consistently enforced based on approved authorizations with real-time policy evaluation?",
+    "examples": [
+      {
+        "evidence": "Attached are the logs from our Policy Enforcement Point (PEP). For every API call, the PEP makes a real-time call to our Open Policy Agent (OPA) server. The OPA policy (policy.rego attached) evaluates the agent's token and the requested resource, returning an 'allow' or 'deny' decision. The logs show that over 1 million requests in the last 24 hours were evaluated without error, with deny decisions correctly logged for unauthorized access attempts.",
+        "base_score": 90,
+        "justification": "The evidence demonstrates a real-time, policy-as-code enforcement mechanism with comprehensive logging that confirms consistent application of access decisions."
+      },
+      {
+        "evidence": "Access is managed by API keys. The application code has a list of which keys can access which endpoints. We update the code when access needs to change.",
+        "base_score": 20,
+        "justification": "Access control is hardcoded into the application, not based on real-time policy evaluation. Changes require a code deployment, and the system is not based on approved authorizations in a manageable way."
+      }
+    ]
+  },
+  "AC-4": {
+    "question": "Is information flow between AI agents and external systems controlled according to approved security policies?",
+    "examples": [
+      {
+        "evidence": "All external API calls made by AI agents are routed through a central egress proxy. The proxy configuration (attached) shows a whitelist of allowed FQDNs and specific URL paths for each agent type. All other outbound connections are blocked by default. The policy is reviewed and approved by the security team quarterly.",
+        "base_score": 95,
+        "justification": "Information flow is explicitly controlled by a policy-driven egress proxy with a default-deny stance, which is a strong and verifiable control."
+      },
+      {
+        "evidence": "The agents can call any external APIs they need to perform their functions. The servers have a direct connection to the internet.",
+        "base_score": 5,
+        "justification": "There are no controls on information flow, allowing agents to potentially exfiltrate data or connect to malicious external systems."
+      }
+    ]
+  },
+  "AC-6": {
+    "question": "Are AI agents and users granted only the minimum privileges necessary for their assigned functions?",
+    "examples": [
+      {
+        "evidence": "We have defined 3 roles for our AI agents: 'Data-Reader', 'Data-Processor', and 'User-Notifier'. The attached IAM policy documents show that the 'Data-Reader' role only has read-only access to the patient-data bucket, the 'Data-Processor' only has read-write access to the processing-cache database, and the 'User-Notifier' can only publish messages to the notification service. An agent cannot have more than one role.",
+        "base_score": 100,
+        "justification": "The principle of least privilege is strictly enforced through a well-defined, role-based model where permissions are narrowly scoped to the specific function of the agent."
+      },
+      {
+        "evidence": "To make things easier, all of our AI agents run with the same IAM role which has admin-level access to the database and other services.",
+        "base_score": 0,
+        "justification": "The agents have excessive privileges that are far beyond what is necessary for their functions, representing a critical security flaw."
+      }
+    ]
+  },
+  "AU-1": {
+    "question": "Are audit and accountability policies established that address AI agent logging, monitoring, and audit trail protection requirements?",
+    "examples": [
+      {
+        "evidence": "The 'Audit & Logging Policy v2.5' is attached. Section 4.2 specifically covers AI agent logging standards, including what events must be logged. Section 6 describes how logs are shipped to a write-once, read-many (WORM) storage bucket, and Section 7 details our log monitoring and alerting strategy.",
+        "base_score": 90,
+        "justification": "A formal, version-controlled policy exists and explicitly addresses the key requirements of logging, monitoring, and protecting audit trails for AI agents."
+      },
+      {
+        "evidence": "We don't have a formal policy document for this, but the developers know they are supposed to log important events.",
+        "base_score": 10,
+        "justification": "There is no formal, enforceable policy, which means there is no guarantee of consistency, completeness, or protection for audit logs."
+      }
+    ]
+  },
+  "AU-2": {
+    "question": "Are all security-relevant events generated by AI agents and system components comprehensively logged with sufficient detail?",
+    "examples": [
+      {
+        "evidence": "Attached are sample log entries for 'agent_authentication_success', 'agent_authentication_failure', 'data_access_request', and 'policy_update_event'. Each log includes a timestamp, source IP, agent ID, event type, resource accessed, and the outcome. These logs are generated for every relevant event across the platform.",
+        "base_score": 95,
+        "justification": "The log samples demonstrate that security-relevant events are being logged with a high level of detail, sufficient for forensic analysis and monitoring."
+      },
+      {
+        "evidence": "The system logs when an agent starts and stops. It doesn't log what data it accessed.",
+        "base_score": 20,
+        "justification": "The logging is not comprehensive and misses critical security-relevant events, such as data access, making it impossible to audit agent activity properly."
+      }
+    ]
+  },
+  "IA-1": {
+    "question": "Are identification and authentication policies established that address quantum-resistant authentication and AI agent identity management?",
+    "examples": [
+      {
+        "evidence": "The 'Identity and Authentication Policy v4.0' is attached. Section 6, added in Q1 2024, mandates the use of PQC (Post-Quantum Cryptography) algorithms for all new systems. It specifies the use of CRYSTALS-Kyber for key exchange and CRYSTALS-Dilithium for digital signatures for all AI agent identities.",
+        "base_score": 90,
+        "justification": "A formal policy exists and has been updated to explicitly mandate specific, recognized quantum-resistant algorithms for authentication and identity."
+      },
+      {
+        "evidence": "Our current authentication policy specifies RSA-2048. We are aware of the need for quantum resistance but have not updated our policies yet.",
+        "base_score": 30,
+        "justification": "The policy exists but is outdated and does not address the requirement for quantum-resistant authentication, which is a specific control requirement."
+      }
+    ]
+  },
+  "IA-2": {
+    "question": "Are users and AI agents uniquely identified and authenticated using quantum-resistant cryptographic methods?",
+    "examples": [
+      {
+        "evidence": "Attached is the configuration for our service mesh, which shows that all agent-to-agent communication is authenticated using mTLS with X.509 certificates. The certificate authority is configured to use the CRYSTALS-Dilithium signature scheme. User authentication federates to our IdP which uses FIDO2 passkeys.",
+        "base_score": 100,
+        "justification": "The evidence shows the actual technical implementation and configuration of a recognized quantum-resistant signature scheme for agent authentication, providing strong assurance."
+      },
+      {
+        "evidence": "Our agents authenticate with a simple API key that is passed in the HTTP header. The keys are stored in a secrets manager.",
+        "base_score": 10,
+        "justification": "The authentication method is a simple shared secret (API key) and does not use any quantum-resistant cryptography, failing to meet the control requirements."
+      }
+    ]
+  },
+  "SC-12": {
+    "question": "Is cryptographic key management implemented with quantum-resistant algorithms and automated lifecycle management?",
+    "examples": [
+      {
+        "evidence": "We use a central Key Management Service (KMS). The KMS is configured to use CRYSTALS-Kyber for generating and wrapping data keys. The attached policy shows that data keys are automatically rotated every 24 hours. The KMS logs (sample attached) show key rotation events occurring as scheduled.",
+        "base_score": 95,
+        "justification": "The evidence points to a centralized KMS using a specific PQC algorithm and demonstrates automated key lifecycle management (rotation) with logging."
+      },
+      {
+        "evidence": "Encryption keys are stored in a configuration file with the application. We rotate them manually once a year.",
+        "base_score": 10,
+        "justification": "Key management is manual, infrequent, and insecure (keys in config file). It does not use quantum-resistant algorithms."
+      }
+    ]
+  },
+  "SI-7": {
+      "question": "Is integrity verification implemented for all software and firmware with quantum resistant mechanisms and automated monitoring?",
+      "examples": [
+      {
+        "evidence": "Our CI/CD pipeline automatically signs all container images using Cosign with a key stored in our KMS. The signature algorithm is CRYSTALS-Dilithium. Our Kubernetes admission controller verifies the signature of every image before it can be deployed. We have a monitoring system that alerts on any unsigned images running in the cluster.",
+        "base_score": 100,
+        "justification": "The evidence shows a fully automated, end-to-end process for integrity verification using a PQC signature algorithm, with both preventative (admission controller) and detective (monitoring) controls."
+      },
+      {
+        "evidence": "We do a sha256sum check on the application binary after we build it and compare it to the one we deploy.",
+        "base_score": 25,
+        "justification": "The integrity check is manual, does not use any quantum-resistant mechanisms, and lacks automated, continuous monitoring."
+      }
+    ]
+  },
+  "BA-1": {
+    "question": "Does the following sequence of user log events contain any suspicious or anomalous behavior when compared to a typical user's baseline activity? A high score (e.g., 90-100) indicates a severe anomaly that requires an immediate alert.",
+    "examples": [
+      {
+        "evidence": "Timestamp: 2024-10-28 09:05:12, User: j.doe, Action: login_success, Source_IP: 192.168.1.10; Timestamp: 2024-10-28 09:07:45, User: j.doe, Action: file_read, File: /docs/project_plan.docx; Timestamp: 2024-10-28 14:22:10, User: j.doe, Action: file_write, File: /docs/project_update.docx; Timestamp: 2024-10-28 17:01:55, User: j.doe, Action: logout_success, Source_IP: 192.168.1.10",
+        "base_score": 5,
+        "justification": "The activity is consistent with a normal workday: login during business hours from an internal IP, accessing project files, and logging out at the end of the day. This is normal behavior."
+      },
+      {
+        "evidence": "Timestamp: 2024-10-29 03:15:40, User: s.smith, Action: login_failed, Source_IP: 203.0.113.55; Timestamp: 2024-10-29 03:15:45, User: s.smith, Action: login_failed, Source_IP: 203.0.113.55; Timestamp: 2024-10-29 03:15:51, User: s.smith, Action: login_success, Source_IP: 203.0.113.55; Timestamp: 2024-10-29 03:18:02, User: s.smith, Action: data_export, Table: PATIENT_RECORDS, Row_Count: 50000; Timestamp: 2024-10-29 03:19:10, User: s.smith, Action: file_delete, File: /logs/auth.log",
+        "base_score": 98,
+        "justification": "This activity is a critical security alert. It involves multiple failed logins, a login at a highly unusual time from an external IP, a mass data export of sensitive records, and an attempt to delete security logs."
+      }
+    ]
+  }
+}
